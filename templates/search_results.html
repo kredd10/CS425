@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Search Results</h2>
+
+<div class="mb-3">
+    <a href="/search" class="btn btn-secondary">New Search</a>
+</div>
+
+<div class="row">
+    {% if results %}
+        {% for property, price in results %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ property.type.capitalize() }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">${{ price.rental_price }} per day</h6>
+                    <p class="card-text">
+                        {% if property.number_of_rooms %}
+                        Rooms: {{ property.number_of_rooms }}<br>
+                        {% endif %}
+                        {% if property.square_footage %}
+                        Area: {{ property.square_footage }} sq ft<br>
+                        {% endif %}
+                        {% if property.agency_name %}
+                        Agency: {{ property.agency_name }}<br>
+                        {% endif %}
+                        Status: {{ "Available" if property.availability else "Not Available" }}
+                    </p>
+                    <a href="/property/{{ property.property_id }}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No properties match your search criteria. Please try different parameters.
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

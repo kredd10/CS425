@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Add New Property</h2>
+
+<form method="POST" action="/add_property">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Property Address</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label for="street" class="form-label">Street Address</label>
+                    <input type="text" class="form-control" id="street" name="street" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" name="city" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="state" class="form-label">State/Province</label>
+                    <input type="text" class="form-control" id="state" name="state">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="zip_code" class="form-label">ZIP/Postal Code</label>
+                    <input type="text" class="form-control" id="zip_code" name="zip_code">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="country" class="form-label">Country</label>
+                    <input type="text" class="form-control" id="country" name="country">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Property Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="type" class="form-label">Property Type</label>
+                    <select class="form-control" id="type" name="type" required>
+                        <option value="apartment">Apartment</option>
+                        <option value="house">House</option>
+                        <option value="condo">Condo</option>
+                        <option value="commercial">Commercial</option>
+                        <option value="land">Land</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="neighborhood_id" class="form-label">Neighborhood</label>
+                    <select class="form-control" id="neighborhood_id" name="neighborhood_id">
+                        <option value="">-- Select Neighborhood --</option>
+                        {% for neighborhood in neighborhoods %}
+                        <option value="{{ neighborhood.neighborhood_id }}">{{ neighborhood.neighborhood_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="rooms" class="form-label">Number of Rooms</label>
+                    <input type="number" class="form-control" id="rooms" name="rooms" min="0">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="square_footage" class="form-label">Square Footage</label>
+                    <input type="number" class="form-control" id="square_footage" name="square_footage" step="0.01" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="agency_name" class="form-label">Agency Name</label>
+                    <input type="text" class="form-control" id="agency_name" name="agency_name">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="business_type" class="form-label">Type of Business</label>
+                    <input type="text" class="form-control" id="business_type" name="business_type">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Pricing</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="rental_price" class="form-label">Rental Price (per day)</label>
+                <input type="number" class="form-control" id="rental_price" name="rental_price" step="0.01" min="0" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Features</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="has_vacation_home" name="has_vacation_home">
+                <label class="form-check-label" for="has_vacation_home">
+                    Vacation Home
+                </label>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="has_land_available" name="has_land_available">
+                <label class="form-check-label" for="has_land_available">
+                    Land Available
+                </label>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="amenities_available" name="amenities_available">
+                <label class="form-check-label" for="amenities_available">
+                    Amenities Available
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">Add Property</button>
+        <a href="/manage_properties" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

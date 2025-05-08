@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Search Properties</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="POST" action="/search">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" name="city" placeholder="Enter city name">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="type" class="form-label">Property Type</label>
+                    <select class="form-control" id="type" name="type">
+                        <option value="all">All Types</option>
+                        <option value="apartment">Apartment</option>
+                        <option value="house">House</option>
+                        <option value="condo">Condo</option>
+                        <option value="commercial">Commercial</option>
+                        <option value="land">Land</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="min_price" class="form-label">Min Price (per day)</label>
+                    <input type="number" class="form-control" id="min_price" name="min_price" placeholder="Minimum price">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="max_price" class="form-label">Max Price (per day)</label>
+                    <input type="number" class="form-control" id="max_price" name="max_price" placeholder="Maximum price">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="text-center">
+    <a href="/properties" class="btn btn-secondary">View All Properties</a>
+</div>
+{% endblock %}

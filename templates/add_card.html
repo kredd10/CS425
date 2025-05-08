@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Add Payment Method</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="/add_card">
+                <div class="mb-3">
+                    <label for="card_number" class="form-label">Card Number</label>
+                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="XXXX XXXX XXXX XXXX" required>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="expiry_month" class="form-label">Expiration Month</label>
+                        <select class="form-select" id="expiry_month" name="expiry_month" required>
+                            {% for month in range(1, 13) %}
+                            <option value="{{ month }}">{{ "%02d"|format(month) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="expiry_year" class="form-label">Expiration Year</label>
+                        <select class="form-select" id="expiry_year" name="expiry_year" required>
+                            {% for year in range(2023, 2040) %}
+                            <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="payment_address_id" class="form-label">Billing Address</label>
+                    <select class="form-select" id="payment_address_id" name="payment_address_id" required>
+                        {% for address in addresses %}
+                        <option value="{{ address.address_id }}">
+                            {{ address.address_type.capitalize() }}: {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Add Payment Method</button>
+                    <a href="/profile" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

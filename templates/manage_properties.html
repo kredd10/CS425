@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Manage Properties</h2>
+
+<div class="mb-4">
+    <a href="/add_property" class="btn btn-success">Add New Property</a>
+</div>
+
+{% if properties %}
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Rooms</th>
+                <th>Square Footage</th>
+                <th>Price</th>
+                <th>Availability</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for property in properties %}
+            <tr>
+                <td>{{ property.property_id }}</td>
+                <td>{{ property.type.capitalize() }}</td>
+                <td>{{ property.number_of_rooms or 'N/A' }}</td>
+                <td>{{ property.square_footage or 'N/A' }}</td>
+                <td>${{ property.current_price or 'N/A' }}</td>
+                <td>
+                    {% if property.availability %}
+                    <span class="badge bg-success">Available</span>
+                    {% else %}
+                    <span class="badge bg-danger">Not Available</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="/property/{{ property.property_id }}" class="btn btn-sm btn-info">View</a>
+                        <a href="/edit_property/{{ property.property_id }}" class="btn btn-sm btn-warning">Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ property.property_id }}">Delete</button>
+                    </div>
+                    
+                    <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="deleteModal{{ property.property_id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ property.property_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel{{ property.property_id }}">Confirm Delete</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this property? This action cannot be undone.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <form action="/delete_property/{{ property.property_id }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    You haven't added any properties yet. Click the "Add New Property" button to get started.
+</div>
+{% endif %}
+{% endblock %}

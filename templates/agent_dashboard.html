@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Agent Dashboard</h2>
+<p>Welcome, {{ user.first_name }} {{ user.last_name }}</p>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Agent Information</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Email: {{ user.email }}</li>
+                    <li class="list-group-item">Phone: {{ user.phone_number }}</li>
+                    {% if agent.job_title %}
+                    <li class="list-group-item">Job Title: {{ agent.job_title }}</li>
+                    {% endif %}
+                    {% if agent.agency_name %}
+                    <li class="list-group-item">Agency: {{ agent.agency_name }}</li>
+                    {% endif %}
+                    {% if agent.contract_type %}
+                    <li class="list-group-item">Contract Type: {{ agent.contract_type }}</li>
+                    {% endif %}
+                </ul>
+                <a href="/profile" class="btn btn-primary mt-3">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Actions</h5>
+                <a href="/add_property" class="btn btn-success mb-2">Add New Property</a>
+                <a href="/manage_properties" class="btn btn-info">Manage Properties</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>Your Properties</h3>
+<div class="row">
+    {% if properties %}
+        {% for property in properties %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ property.type.capitalize() }}</h5>
+                    <p class="card-text">
+                        {% if property.number_of_rooms %}
+                        Rooms: {{ property.number_of_rooms }}<br>
+                        {% endif %}
+                        {% if property.square_footage %}
+                        Area: {{ property.square_footage }} sq ft<br>
+                        {% endif %}
+                        Status: {{ "Available" if property.availability else "Not Available" }}
+                    </p>
+                    <a href="/property/{{ property.property_id }}" class="btn btn-primary">View Details</a>
+                    <a href="/edit_property/{{ property.property_id }}" class="btn btn-secondary">Edit</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <p>You don't have any properties listed yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

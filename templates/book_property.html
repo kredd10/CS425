@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Book Property</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ property.type.capitalize() }}</h5>
+                <p class="lead">${{ price.rental_price }} per day</p>
+                <ul class="list-group list-group-flush">
+                    {% if property.number_of_rooms %}
+                    <li class="list-group-item">Rooms: {{ property.number_of_rooms }}</li>
+                    {% endif %}
+                    {% if property.square_footage %}
+                    <li class="list-group-item">Area: {{ property.square_footage }} sq ft</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Booking Details</h5>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="card_id" class="form-label">Payment Method</label>
+                        <select class="form-control" id="card_id" name="card_id" required>
+                            {% if credit_cards %}
+                                {% for card in credit_cards %}
+                                <option value="{{ card.card_id }}">Card ending in {{ card.card_number[-4:] }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No payment methods available</option>
+                            {% endif %}
+                        </select>
+                        {% if not credit_cards %}
+                        <small class="text-muted">Please <a href="/add_card">add a payment method</a> first.</small>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary" {% if not credit_cards %}disabled{% endif %}>Book Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

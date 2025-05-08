@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Edit Payment Method</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="/edit_card/{{ card.card_id }}">
+                <div class="mb-3">
+                    <label for="card_number" class="form-label">Card Number</label>
+                    <input type="text" class="form-control" id="card_number" value="**** **** **** {{ card.card_number[-4:] }}" disabled>
+                    <small class="text-muted">For security reasons, you cannot change the card number.</small>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="expiry_month" class="form-label">Expiration Month</label>
+                        <select class="form-select" id="expiry_month" name="expiry_month" required>
+                            {% for month in range(1, 13) %}
+                            <option value="{{ month }}" {% if month == expiry_month %}selected{% endif %}>{{ "%02d"|format(month) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="expiry_year" class="form-label">Expiration Year</label>
+                        <select class="form-select" id="expiry_year" name="expiry_year" required>
+                            {% for year in range(2023, 2040) %}
+                            <option value="{{ year }}" {% if year == expiry_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="payment_address_id" class="form-label">Billing Address</label>
+                    <select class="form-select" id="payment_address_id" name="payment_address_id" required>
+                        {% for address in addresses %}
+                        <option value="{{ address.address_id }}" {% if address.address_id == card.payment_address_id %}selected{% endif %}>
+                            {{ address.address_type.capitalize() }}: {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="d-grid gap-

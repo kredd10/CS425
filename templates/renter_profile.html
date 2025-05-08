@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Your Profile</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Personal Information</h5>
+                <form method="POST" action="/update_profile">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Renter Preferences</h5>
+                <form method="POST" action="/update_preferences">
+                    <div class="mb-3">
+                        <label for="move_in_date" class="form-label">Move-in Date</label>
+                        <input type="date" class="form-control" id="move_in_date" name="move_in_date" value="{{ renter.move_in_date }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="preferred_location" class="form-label">Preferred Location</label>
+                        <input type="text" class="form-control" id="preferred_location" name="preferred_location" value="{{ renter.preferred_location }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="budget" class="form-label">Budget</label>
+                        <input type="number" class="form-control" id="budget" name="budget" value="{{ renter.budget }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Preferences</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Addresses</h5>
+                {% if addresses %}
+                <ul class="list-group">
+                    {% for address in addresses %}
+                    <li class="list-group-item">
+                        <strong>{{ address.address_type.capitalize() }}:</strong> {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}, {{ address.country }}
+                        <a href="/edit_address/{{ address.address_id }}" class="btn btn-sm btn-secondary float-end">Edit</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No addresses added yet.</p>
+                {% endif %}
+                <a href="/add_address" class="btn btn-success mt-3">Add Address</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Payment Methods</h5>
+                {% if credit_cards %}
+                <ul class="list-group">
+                    {% for card in credit_cards %}
+                    <li class="list-group-item">
+                        Card ending in {{ card.card_number[-4:] }}
+                        <span class="badge bg-secondary">{{ card.card_type }}</span>
+                        <a href="/edit_card/{{ card.card_id }}" class="btn btn-sm btn-secondary float-end">Edit</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No payment methods added yet.</p>
+                {% endif %}
+                <a href="/add_card" class="btn btn-success mt-3">Add Payment Method</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

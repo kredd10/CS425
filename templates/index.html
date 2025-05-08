@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to Real Estate Management</h1>
+    <p class="lead">Find your perfect property or list your properties for rent.</p>
+    <hr class="my-4">
+    <p>Browse our listings, search for properties, or register to start booking.</p>
+    <div class="mt-4">
+        <a class="btn btn-primary btn-lg" href="/properties" role="button">View Properties</a>
+        <a class="btn btn-success btn-lg" href="/search" role="button">Search Properties</a>
+        {% if not session.user_id %}
+        <a class="btn btn-info btn-lg" href="/register" role="button">Register Now</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">For Renters</h5>
+                <p class="card-text">Find your perfect rental property. Browse listings, book viewings, and manage your bookings all in one place.</p>
+                <a href="/search" class="btn btn-primary">Start Searching</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">For Agents</h5>
+                <p class="card-text">List your properties, manage bookings, and connect with potential renters efficiently.</p>
+                <a href="/register" class="btn btn-primary">Become an Agent</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Reward Program</h5>
+                <p class="card-text">Earn points with every booking and redeem them for discounts on future rentals.</p>
+                <a href="/rewards" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Renter Dashboard</h2>
+<p>Welcome, {{ user.first_name }} {{ user.last_name }}</p>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Renter Information</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Email: {{ user.email }}</li>
+                    <li class="list-group-item">Phone: {{ user.phone_number }}</li>
+                    {% if renter.move_in_date %}
+                    <li class="list-group-item">Move-in Date: {{ renter.move_in_date }}</li>
+                    {% endif %}
+                    {% if renter.preferred_location %}
+                    <li class="list-group-item">Preferred Location: {{ renter.preferred_location }}</li>
+                    {% endif %}
+                    {% if renter.budget %}
+                    <li class="list-group-item">Budget: ${{ renter.budget }}</li>
+                    {% endif %}
+                </ul>
+                <a href="/profile" class="btn btn-primary mt-3">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Actions</h5>
+                <a href="/search" class="btn btn-success mb-2">Search Properties</a>
+                <a href="/manage_cards" class="btn btn-info">Manage Payment Methods</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>Your Bookings</h3>
+<div class="row">
+    {% if bookings %}
+        {% for booking in bookings %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Booking #{{ booking.booking_id }}</h5>
+                    <p class="card-text">
+                        Property ID: {{ booking.property_id }}<br>
+                        Booking Date: {{ booking.booking_date }}<br>
+                        Start Date: {{ booking.start_date }}<br>
+                        End Date: {{ booking.lease_till_date }}
+                    </p>
+                    <a href="/property/{{ booking.property_id }}" class="btn btn-primary">View Property</a>
+                    <a href="/booking/{{ booking.booking_id }}" class="btn btn-secondary">Booking Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <p>You don't have any bookings yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

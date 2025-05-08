@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Your Profile</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Personal Information</h5>
+                <form method="POST" action="/update_profile">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Agent Information</h5>
+                <form method="POST" action="/update_agent_info">
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">Job Title</label>
+                        <input type="text" class="form-control" id="job_title" name="job_title" value="{{ agent.job_title }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="agency_name" class="form-label">Agency Name</label>
+                        <input type="text" class="form-control" id="agency_name" name="agency_name" value="{{ agent.agency_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contract_type" class="form-label">Contract Type</label>
+                        <select class="form-control" id="contract_type" name="contract_type">
+                            <option value="full-time" {% if agent.contract_type == 'full-time' %}selected{% endif %}>Full-time</option>
+                            <option value="part-time" {% if agent.contract_type == 'part-time' %}selected{% endif %}>Part-time</option>
+                            <option value="contractor" {% if agent.contract_type == 'contractor' %}selected{% endif %}>Contractor</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Agent Info</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Addresses</h5>
+                {% if addresses %}
+                <ul class="list-group">
+                    {% for address in addresses %}
+                    <li class="list-group-item">
+                        <strong>{{ address.address_type.capitalize() }}:</strong> {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}, {{ address.country }}
+                        <a href="/edit_address/{{ address.address_id }}" class="btn btn-sm btn-secondary float-end">Edit</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No addresses added yet.</p>
+                {% endif %}
+                <a href="/add_address" class="btn btn-success mt-3">Add Address</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Properties</h5>
+                <a href="/add_property" class="btn btn-success">Add New Property</a>
+                <a href="/manage_properties" class="btn btn-info mt-2">Manage Properties</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
