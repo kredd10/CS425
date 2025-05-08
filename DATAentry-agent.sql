@@ -1,0 +1,30 @@
+-- Insert sample data into Agent
+INSERT INTO Agent (
+    User_ID,
+    Job_title,
+    Agency_name,
+    Contract_type,
+    Contract_start_date,
+    Contract_end_date,
+    Salary,
+    Commission
+) VALUES
+  (21, 'Lead Realtor',          'Top Gun Realty',            'Full-time', '2020-01-01','2025-12-31', 85000.00, 10000.00),
+  (22, 'Senior Broker',         'Ice Man Estates',           'Full-time', '2019-06-15','2024-06-14', 78000.00,  8000.00),
+  (23, 'Associate',             'Goose & Co.',               'Part-time', '2021-03-10','2026-03-09', 55000.00,  5000.00),
+  (24, 'Office Manager',        'Blackwood Properties',      'Full-time', '2018-08-01','2023-07-31', 62000.00,  7000.00),
+  (25, 'Field Agent',           'Impossible Missions Realty','Full-time', '2017-05-20','2025-05-19', 90000.00, 12000.00),
+  (26, 'Research Analyst',      'Stickell Real Estate',      'Part-time', '2020-11-11','2024-11-10', 53000.00,  4500.00),
+  (27, 'Contract Broker',       'Benji Brokers',             'Contract',  '2022-02-14','2025-02-13', 48000.00,  3000.00),
+  (28, 'Senior Agent',          'Brandt & Sons',             'Full-time', '2016-09-05','2024-09-04', 87000.00,  9500.00),
+  (29, 'Regional Manager',      'Faust Holdings',            'Full-time', '2015-12-30','2025-12-29', 92000.00, 11000.00),
+  (30, 'Realtor',               'Babbitt & Co.',             'Full-time', '2014-04-01','2024-03-31', 61000.00,  6000.00),
+  (31, 'Senior Realtor',        'Raymond Realty',            'Full-time', '2013-07-22','2023-07-21', 83000.00,  9000.00),
+  (32, 'Broker',                'Maguire Estates',           'Part-time', '2012-10-18','2024-10-17', 70000.00,  7500.00),
+  (33, 'Assistant Broker',      'Boyd Brokers',              'Full-time', '2011-01-10','2026-01-09', 56000.00,  4000.00),
+  (34, 'Lead Agent',            'Tidwell Properties',        'Full-time', '2010-02-14','2025-02-13', 94000.00, 11500.00),
+  (35, 'Field Officer',         'Anderton Realty',           'Contract',  '2019-03-03','2024-03-02', 58000.00,  5000.00),
+  (36, 'Legal Advisor',         'Kaffee & Assoc.',           'Full-time', '2018-12-12','2023-12-11', 65000.00,  5500.00),
+  (37, 'Director',              'Jessup Holdings',           'Full-time', '2014-05-05','2025-05-04', 98000.00, 12500.00),
+  (38, 'Project Agent',         'Cage Real Estate',          'Part-time', '2021-07-07','2026-07-06', 62000.00,  7000.00),
+  (39, 'Regional Broker',       'Vrataski Ventures',         'Full-time', '2013-11-11','2024-11-10', 90000.00, 10500.00);
