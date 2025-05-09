@@ -88,7 +88,7 @@ CREATE TABLE Property (
                           REFERENCES Neighborhood(Neighborhood_ID)
                           ON DELETE SET NULL,
     Type               VARCHAR(20) NOT NULL
-                          CHECK (Type IN ('house','apartment','commercial')),
+                          CHECK (Type IN ('house','apartment','commercial', 'vacation homes','condo','land')),
     Number_of_rooms    INT,
     Square_footage     DECIMAL(10,2),
     Agency_name        VARCHAR(250),
