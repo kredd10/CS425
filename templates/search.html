@@ -8,9 +8,16 @@
         <form method="POST" action="/search">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="city" class="form-label">City</label>
-                    <input type="text" class="form-control" id="city" name="city" placeholder="Enter city name">
+                    <label for="city" class="form-label">Location (City)</label>
+                    <input type="text" class="form-control" id="city" name="city" placeholder="Enter city name" required>
                 </div>
+                <div class="col-md-6 mb-3">
+                    <label for="date" class="form-label">Available Date</label>
+                    <input type="date" class="form-control" id="date" name="date" required>
+                </div>
+            </div>
+            
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="type" class="form-label">Property Type</label>
                     <select class="form-control" id="type" name="type">
@@ -22,7 +29,12 @@
                         <option value="land">Land</option>
                     </select>
                 </div>
+                <div class="col-md-6 mb-3">
+                    <label for="bedrooms" class="form-label">Max Number of Bedrooms</label>
+                    <input type="number" class="form-control" id="bedrooms" name="bedrooms" placeholder="Maximum bedrooms">
+                </div>
             </div>
+            
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="min_price" class="form-label">Min Price (per day)</label>
@@ -33,6 +45,19 @@
                     <input type="number" class="form-control" id="max_price" name="max_price" placeholder="Maximum price">
                 </div>
             </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="sort_by" class="form-label">Sort Results By</label>
+                    <select class="form-control" id="sort_by" name="sort_by">
+                        <option value="price_asc">Price (Low to High)</option>
+                        <option value="price_desc">Price (High to Low)</option>
+                        <option value="bedrooms_asc">Bedrooms (Low to High)</option>
+                        <option value="bedrooms_desc">Bedrooms (High to Low)</option>
+                    </select>
+                </div>
+            </div>
+            
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
     </div>
@@ -41,4 +66,16 @@
 <div class="text-center">
     <a href="/properties" class="btn btn-secondary">View All Properties</a>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').min = today;
+        document.getElementById('date').value = today;
+    });
+</script>
 {% endblock %}
+
+
+

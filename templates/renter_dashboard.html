@@ -32,7 +32,7 @@
             <div class="card-body">
                 <h5 class="card-title">Actions</h5>
                 <a href="/search" class="btn btn-success mb-2">Search Properties</a>
-                <a href="/manage_cards" class="btn btn-info">Manage Payment Methods</a>
+                <a href="/profile" class="btn btn-info">Manage Payment Methods</a>
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
                         End Date: {{ booking.lease_till_date }}
                     </p>
                     <a href="/property/{{ booking.property_id }}" class="btn btn-primary">View Property</a>
-                    <a href="/booking/{{ booking.booking_id }}" class="btn btn-secondary">Booking Details</a>
+                    <a href="/booking_details/{{ booking.booking_id }}" class="btn btn-secondary">Booking Details</a>
                 </div>
             </div>
         </div>
@@ -65,3 +65,4 @@
     {% endif %}
 </div>
 {% endblock %}
+

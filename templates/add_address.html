@@ -13,15 +13,13 @@
     <div class="card">
         <div class="card-body">
             <form method="POST" action="/add_address">
-                <div class="mb-3">
-                    <label for="address_type" class="form-label">Address Type</label>
-                    <select class="form-select" id="address_type" name="address_type" required>
-                        <option value="home">Home</option>
-                        <option value="work">Work</option>
-                        <option value="property">Property</option>
-                        <option value="other">Other</option>
+                <div class="form-group">
+                    <label for="address_type">Address Type</label>
+                    <select class="form-control" id="address_type" name="address_type" required>
+                        <option value="primary">Primary</option>
+                        <option value="payment">Payment</option>
                     </select>
-                    <small class="text-muted">Only 'home', 'work', 'property', and 'other' are allowed.</small>
+                    <small class="text-danger">Note: Address type can only be 'primary' or 'payment'</small>
                 </div>
                 
                 <div class="mb-3">
@@ -62,4 +60,14 @@
     </div>
 </div>
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
 

@@ -151,15 +151,24 @@ def property_detail(property_id):
 @app.route('/search', methods=['GET', 'POST'])
 def search_properties():
     if request.method == 'POST':
+        # Get form data
         city = request.form.get('city')
+        search_date = request.form.get('date')
         property_type = request.form.get('type')
         min_price = request.form.get('min_price')
         max_price = request.form.get('max_price')
+        bedrooms = request.form.get('bedrooms')
+        sort_by = request.form.get('sort_by', 'price_asc')
         
-        # Base query - use Property instead of property
+        # Convert search_date to datetime object
+        if search_date:
+            search_date = datetime.strptime(search_date, '%Y-%m-%d').date()
+        
+        # Base query - join Property with Price and Address
         query = db.session.query(Property, Price).\
             join(Price, Property.property_id == Price.property_id).\
-            join(Address, Property.address_id == Address.address_id)
+            join(Address, Property.address_id == Address.address_id).\
+            filter(Property.availability == True)
         
         # Apply filters
         if city:
@@ -170,6 +179,28 @@ def search_properties():
             query = query.filter(Price.rental_price >= min_price)
         if max_price:
             query = query.filter(Price.rental_price <= max_price)
+        if bedrooms:
+            query = query.filter(Property.number_of_rooms <= bedrooms)
+        
+        # Check availability for the specified date
+        if search_date:
+            # Subquery to find properties with bookings that overlap with the search date
+            booked_properties = db.session.query(Booking.property_id).\
+                filter(Booking.start_date <= search_date).\
+                filter(Booking.lease_till_date >= search_date)
+            
+            # Exclude booked properties
+            query = query.filter(~Property.property_id.in_(booked_properties))
+        
+        # Apply sorting
+        if sort_by == 'price_asc':
+            query = query.order_by(Price.rental_price.asc())
+        elif sort_by == 'price_desc':
+            query = query.order_by(Price.rental_price.desc())
+        elif sort_by == 'bedrooms_asc':
+            query = query.order_by(Property.number_of_rooms.asc())
+        elif sort_by == 'bedrooms_desc':
+            query = query.order_by(Property.number_of_rooms.desc())
         
         # Get latest price for each property
         results = []
@@ -178,7 +209,18 @@ def search_properties():
             if latest_price:
                 results.append((prop, latest_price))
         
-        return render_template('search_results.html', results=results)
+        # Store search parameters for display
+        search_params = {
+            'city': city,
+            'date': search_date.strftime('%Y-%m-%d') if search_date else None,
+            'type': property_type,
+            'min_price': min_price,
+            'max_price': max_price,
+            'bedrooms': bedrooms,
+            'sort_by': sort_by
+        }
+        
+        return render_template('search_results.html', results=results, search_params=search_params)
     
     return render_template('search.html')
 
@@ -197,6 +239,11 @@ def book_property(property_id):
         end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
         card_id = request.form.get('card_id')
         
+        # Validate dates
+        if start_date >= end_date:
+            flash('End date must be after start date')
+            return redirect(url_for('book_property', property_id=property_id))
+        
         # Check if property is available
         existing_bookings = Booking.query.filter_by(property_id=property_id).all()
         for booking in existing_bookings:
@@ -210,30 +257,41 @@ def book_property(property_id):
             renter_id=renter.renter_id,
             card_id=card_id,
             start_date=start_date,
-            lease_till_date=end_date
+            lease_till_date=end_date,
+            booking_date=datetime.utcnow().date()
         )
-        db.session.add(new_booking)
-        db.session.commit()
         
-        # Add reward points
-        current_price = Price.query.filter_by(property_id=property_id).order_by(Price.effective_date.desc()).first()
-        if current_price:
-            reward_points = int(current_price.rental_price)
-            new_reward = Reward_program(
-                renter_id=renter.renter_id,
-                booking_id=new_booking.booking_id,
-                reward_points=reward_points
-            )
-            db.session.add(new_reward)
+        try:
+            db.session.add(new_booking)
             db.session.commit()
-        
-        flash('Property booked successfully!')
-        return redirect(url_for('dashboard'))
+            
+            # Add reward points
+            current_price = Price.query.filter_by(property_id=property_id).order_by(Price.effective_date.desc()).first()
+            if current_price:
+                # Calculate days between start and end date
+                days = (end_date - start_date).days
+                reward_points = int(float(current_price.rental_price) * days)
+                
+                new_reward = Reward_program(
+                    renter_id=renter.renter_id,
+                    booking_id=new_booking.booking_id,
+                    reward_points=reward_points
+                )
+                db.session.add(new_reward)
+                db.session.commit()
+            
+            flash('Property booked successfully!')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error booking property: {str(e)}')
+            return redirect(url_for('book_property', property_id=property_id))
     
     credit_cards = Credit_card.query.filter_by(renter_id=renter.renter_id).all()
     current_price = Price.query.filter_by(property_id=property_id).order_by(Price.effective_date.desc()).first()
+    today = datetime.utcnow().date().isoformat()
     
-    return render_template('book_property.html', property=property, credit_cards=credit_cards, price=current_price)
+    return render_template('book_property.html', property=property, credit_cards=credit_cards, price=current_price, today=today)
 
 # User profile routes
 @app.route('/profile')
@@ -279,7 +337,7 @@ def add_property():
         rental_price = request.form.get('rental_price')
         neighborhood_id = request.form.get('neighborhood_id')
         
-        # Create address with the correct address_type
+        # Create address with a valid address_type
         new_address = Address(
             user_id=session['user_id'],
             street=street,
@@ -287,7 +345,7 @@ def add_property():
             state=state,
             zip_code=zip_code,
             country=country,
-            address_type='property'  # Use 'property' as the address type for properties
+            address_type='primary'
         )
         db.session.add(new_address)
         db.session.flush()  # Get the address_id without committing
@@ -434,11 +492,21 @@ def delete_property(property_id):
         flash('You can only delete your own properties')
         return redirect(url_for('manage_properties'))
     
-    # Delete the property (cascade will handle related records)
-    db.session.delete(property)
-    db.session.commit()
+    try:
+        # Delete related records first
+        Property_features.query.filter_by(property_id=property_id).delete()
+        Price.query.filter_by(property_id=property_id).delete()
+        Booking.query.filter_by(property_id=property_id).delete()
+        
+        # Then delete the property
+        db.session.delete(property)
+        db.session.commit()
+        
+        flash('Property deleted successfully!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting property: {str(e)}')
     
-    flash('Property deleted successfully!')
     return redirect(url_for('manage_properties'))
 
 # Address management routes
@@ -459,7 +527,7 @@ def add_address():
         address_type = request.form.get('address_type')
         
         # Validate address_type is one of the allowed values
-        allowed_types = ['home', 'work', 'property', 'other']
+        allowed_types = ['primary', 'payment']
         if address_type not in allowed_types:
             warning = f"Invalid address type '{address_type}'. Only {', '.join(allowed_types)} are allowed."
             return render_template('add_address.html', warning=warning)
@@ -510,7 +578,7 @@ def edit_address(address_id):
         
         # Validate address_type is one of the allowed values
         address_type = request.form.get('address_type')
-        allowed_types = ['home', 'work', 'property', 'other']
+        allowed_types = ['primary', 'payment']
         if address_type not in allowed_types:
             warning = f"Invalid address type '{address_type}'. Only {', '.join(allowed_types)} are allowed."
             return render_template('edit_address.html', address=address, warning=warning)
@@ -566,9 +634,9 @@ def add_card():
     
     renter = Prospective_renter.query.filter_by(user_id=session['user_id']).first()
     
-    # Get addresses that can be used for billing (home, work, or other)
+    # Get addresses that can be used for billing (payment type)
     addresses = Address.query.filter_by(user_id=session['user_id']).filter(
-        Address.address_type.in_(['home', 'work', 'other'])
+        Address.address_type == 'payment'
     ).all()
     
     if request.method == 'POST':
@@ -603,9 +671,9 @@ def add_card():
             flash(f'Error adding payment method: {str(e)}')
             return redirect(url_for('add_card'))
     
-    # Check if user has any addresses
+    # Check if user has any payment addresses
     if not addresses:
-        flash('Please add a home or work address before adding a payment method')
+        flash('Please add a payment address before adding a payment method')
         return redirect(url_for('add_address'))
     
     return render_template('add_card.html', addresses=addresses)
@@ -687,11 +755,265 @@ def check_address_constraint():
     result = db.session.execute(query).fetchone()
     constraint_def = result[0] if result else 'Constraint not found'
     
-    # Display the constraint definition
-    return f"<h3>Address Type Constraint:</h3><pre>{constraint_def}</pre>"
+    # Extract the allowed values from the constraint definition
+    import re
+    allowed_values = []
+    if constraint_def:
+        match = re.search(r"IN \(([^)]+)\)", constraint_def)
+        if match:
+            values_str = match.group(1)
+            allowed_values = [v.strip("'") for v in values_str.split(',')]
+    
+    return render_template('admin_info.html', constraint_def=constraint_def, allowed_values=allowed_values)
+
+def get_allowed_address_types():
+    """Get the allowed address types from the database constraint."""
+    query = """
+    SELECT pg_get_constraintdef(c.oid)
+    FROM pg_constraint c
+    JOIN pg_class t ON c.conrelid = t.oid
+    WHERE t.relname = 'address' AND c.conname = 'address_address_type_check'
+    """
+    
+    result = db.session.execute(query).fetchone()
+    constraint_def = result[0] if result else None
+    
+    allowed_types = ['work', 'shipping']  # Default fallback
+    
+    if constraint_def:
+        import re
+        match = re.search(r"IN \(([^)]+)\)", constraint_def)
+        if match:
+            values_str = match.group(1)
+            allowed_types = [v.strip("'") for v in values_str.split(',')]
+    
+    return allowed_types
+
+@app.route('/update_preferences', methods=['POST'])
+def update_preferences():
+    if 'user_id' not in session or session['user_type'] != 'prospective_renter':
+        flash('Only renters can update preferences')
+        return redirect(url_for('login'))
+    
+    renter = Prospective_renter.query.filter_by(user_id=session['user_id']).first()
+    
+    if not renter:
+        flash('Renter profile not found')
+        return redirect(url_for('profile'))
+    
+    # Get form data
+    move_in_date = request.form.get('move_in_date')
+    preferred_location = request.form.get('preferred_location')
+    budget = request.form.get('budget')
+    
+    # Update renter preferences
+    if move_in_date:
+        try:
+            renter.move_in_date = datetime.strptime(move_in_date, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format')
+            return redirect(url_for('profile'))
+    else:
+        renter.move_in_date = None
+    
+    renter.preferred_location = preferred_location
+    
+    if budget:
+        try:
+            renter.budget = float(budget)
+        except ValueError:
+            flash('Invalid budget value')
+            return redirect(url_for('profile'))
+    else:
+        renter.budget = None
+    
+    try:
+        db.session.commit()
+        flash('Preferences updated successfully!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating preferences: {str(e)}')
+    
+    return redirect(url_for('profile'))
+
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if 'user_id' not in session:
+        flash('Please log in first')
+        return redirect(url_for('login'))
+    
+    user = Users.query.get(session['user_id'])
+    
+    if not user:
+        flash('User not found')
+        return redirect(url_for('profile'))
+    
+    # Get form data
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    email = request.form.get('email')
+    phone_number = request.form.get('phone_number')
+    
+    # Check if email is already used by another user
+    if email != user.email:
+        existing_user = Users.query.filter_by(email=email).first()
+        if existing_user and existing_user.user_id != user.user_id:
+            flash('Email already in use by another account')
+            return redirect(url_for('profile'))
+    
+    # Update user information
+    user.first_name = first_name
+    user.last_name = last_name
+    user.email = email
+    user.phone_number = phone_number
+    
+    try:
+        db.session.commit()
+        flash('Profile updated successfully!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating profile: {str(e)}')
+    
+    return redirect(url_for('profile'))
+
+@app.route('/update_agent_info', methods=['POST'])
+def update_agent_info():
+    if 'user_id' not in session or session['user_type'] != 'agent':
+        flash('Only agents can update agent information')
+        return redirect(url_for('login'))
+    
+    agent = Agent.query.filter_by(user_id=session['user_id']).first()
+    
+    if not agent:
+        flash('Agent profile not found')
+        return redirect(url_for('profile'))
+    
+    # Get form data
+    job_title = request.form.get('job_title')
+    agency_name = request.form.get('agency_name')
+    contract_type = request.form.get('contract_type')
+    
+    # Update agent information
+    agent.job_title = job_title
+    agent.agency_name = agency_name
+    agent.contract_type = contract_type
+    
+    try:
+        db.session.commit()
+        flash('Agent information updated successfully!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating agent information: {str(e)}')
+    
+    return redirect(url_for('profile'))
+
+@app.route('/booking_details/<int:booking_id>')
+def booking_details(booking_id):
+    if 'user_id' not in session:
+        flash('Please log in first')
+        return redirect(url_for('login'))
+    
+    # Get the booking
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Check if the booking belongs to this user
+    user = Users.query.get(session['user_id'])
+    if user.user_type == 'prospective_renter':
+        renter = Prospective_renter.query.filter_by(user_id=user.user_id).first()
+        if booking.renter_id != renter.renter_id:
+            flash('You can only view your own bookings')
+            return redirect(url_for('dashboard'))
+    elif user.user_type == 'agent':
+        agent = Agent.query.filter_by(user_id=user.user_id).first()
+        property = Property.query.get(booking.property_id)
+        if property.agent_id != agent.agent_id:
+            flash('You can only view bookings for your properties')
+            return redirect(url_for('dashboard'))
+    
+    # Get related information
+    property = Property.query.get(booking.property_id)
+    address = Address.query.get(property.address_id)
+    renter = Prospective_renter.query.get(booking.renter_id)
+    renter_user = Users.query.get(renter.user_id)
+    card = Credit_card.query.get(booking.card_id)
+    
+    # Get reward points if any
+    reward = Reward_program.query.filter_by(booking_id=booking.booking_id).first()
+    
+    # Calculate total price
+    current_price = Price.query.filter_by(property_id=property.property_id).order_by(Price.effective_date.desc()).first()
+    if current_price:
+        # Calculate days between start and end date
+        days = (booking.lease_till_date - booking.start_date).days
+        total_price = float(current_price.rental_price) * days
+    else:
+        total_price = None
+    
+    return render_template('booking_details.html', 
+                          booking=booking, 
+                          property=property, 
+                          address=address, 
+                          renter=renter,
+                          renter_user=renter_user,
+                          card=card,
+                          reward=reward,
+                          total_price=total_price)
+
+@app.route('/rewards')
+def rewards():
+    total_points = 0
+    rewards = []
+    
+    if 'user_id' in session and session['user_type'] == 'prospective_renter':
+        renter = Prospective_renter.query.filter_by(user_id=session['user_id']).first()
+        
+        if renter:
+            # Get all rewards for this renter
+            rewards = Reward_program.query.filter_by(renter_id=renter.renter_id).all()
+            
+            # Calculate total points
+            for reward in rewards:
+                total_points += reward.reward_points
+                
+            # Add booking information to rewards
+            for reward in rewards:
+                reward.booking = Booking.query.get(reward.booking_id)
+    
+    return render_template('rewards.html', rewards=rewards, total_points=total_points)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

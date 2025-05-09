@@ -25,14 +25,14 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Booking Details</h5>
-                <form method="POST">
+                <form method="POST" id="bookingForm">
                     <div class="mb-3">
                         <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required min="{{ today }}">
                     </div>
                     <div class="mb-3">
                         <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required min="{{ today }}">
                     </div>
                     <div class="mb-3">
                         <label for="card_id" class="form-label">Payment Method</label>
@@ -49,6 +49,10 @@
                         <small class="text-muted">Please <a href="/add_card">add a payment method</a> first.</small>
                         {% endif %}
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Cost</label>
+                        <p class="form-control-static" id="totalCost">$0.00</p>
+                    </div>
                     <button type="submit" class="btn btn-primary" {% if not credit_cards %}disabled{% endif %}>Book Now</button>
                 </form>
             </div>
@@ -56,3 +60,49 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        const totalCostElement = document.getElementById('totalCost');
+        const pricePerDay = {{ price.rental_price }};
+        
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.min = today;
+        endDateInput.min = today;
+        
+        // Update end date min value when start date changes
+        startDateInput.addEventListener('change', function() {
+            endDateInput.min = startDateInput.value;
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+            updateTotalCost();
+        });
+        
+        endDateInput.addEventListener('change', updateTotalCost);
+        
+        function updateTotalCost() {
+            if (startDateInput.value && endDateInput.value) {
+                const start = new Date(startDateInput.value);
+                const end = new Date(endDateInput.value);
+                const days = Math.max(1, Math.floor((end - start) / (1000 * 60 * 60 * 24)));
+                const totalCost = days * pricePerDay;
+                totalCostElement.textContent = '$' + totalCost.toFixed(2);
+            }
+        }
+        
+        // Form validation
+        document.getElementById('bookingForm').addEventListener('submit', function(event) {
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            
+            if (endDate <= startDate) {
+                event.preventDefault();
+                alert('End date must be after start date');
+            }
+        });
+    });
+</script>

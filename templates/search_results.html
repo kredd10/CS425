@@ -7,25 +7,55 @@
     <a href="/search" class="btn btn-secondary">New Search</a>
 </div>
 
+{% if search_params %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Search Parameters</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Location:</strong> {{ search_params.city }}</p>
+                <p><strong>Date:</strong> {{ search_params.date }}</p>
+                <p><strong>Property Type:</strong> {{ search_params.type|capitalize if search_params.type != 'all' else 'All Types' }}</p>
+            </div>
+            <div class="col-md-6">
+                {% if search_params.min_price or search_params.max_price %}
+                <p><strong>Price Range:</strong> 
+                    {% if search_params.min_price %}${{ search_params.min_price }}{% else %}$0{% endif %} - 
+                    {% if search_params.max_price %}${{ search_params.max_price }}{% else %}No limit{% endif %}
+                </p>
+                {% endif %}
+                {% if search_params.bedrooms %}
+                <p><strong>Max Bedrooms:</strong> {{ search_params.bedrooms }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     {% if results %}
         {% for property, price in results %}
         <div class="col-md-4 mb-4">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">{{ property.type.capitalize() }}</h5>
                     <h6 class="card-subtitle mb-2 text-muted">${{ price.rental_price }} per day</h6>
                     <p class="card-text">
                         {% if property.number_of_rooms %}
-                        Rooms: {{ property.number_of_rooms }}<br>
+                        <strong>Bedrooms:</strong> {{ property.number_of_rooms }}<br>
                         {% endif %}
                         {% if property.square_footage %}
-                        Area: {{ property.square_footage }} sq ft<br>
+                        <strong>Area:</strong> {{ property.square_footage }} sq ft<br>
                         {% endif %}
                         {% if property.agency_name %}
-                        Agency: {{ property.agency_name }}<br>
+                        <strong>Agency:</strong> {{ property.agency_name }}<br>
                         {% endif %}
-                        Status: {{ "Available" if property.availability else "Not Available" }}
+                        <strong>Status:</strong> {{ "Available" if property.availability else "Not Available" }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Description:</strong><br>
+                        A beautiful {{ property.type }} in a great location.
                     </p>
                     <a href="/property/{{ property.property_id }}" class="btn btn-primary">View Details</a>
                 </div>
@@ -41,5 +71,9 @@
     {% endif %}
 </div>
 {% endblock %}
+
+
+
+
 
 

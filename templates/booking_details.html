@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Booking Details</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Booking Information</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Booking ID:</strong> {{ booking.booking_id }}</li>
+                    <li class="list-group-item"><strong>Booking Date:</strong> {{ booking.booking_date }}</li>
+                    <li class="list-group-item"><strong>Start Date:</strong> {{ booking.start_date }}</li>
+                    <li class="list-group-item"><strong>End Date:</strong> {{ booking.lease_till_date }}</li>
+                    {% if total_price %}
+                    <li class="list-group-item"><strong>Total Price:</strong> ${{ total_price }}</li>
+                    {% endif %}
+                    {% if reward %}
+                    <li class="list-group-item"><strong>Reward Points Earned:</strong> {{ reward.reward_points }}</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Payment Information</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Card:</strong> **** **** **** {{ card.card_number[-4:] }}</li>
+                    <li class="list-group-item"><strong>Expiry Date:</strong> {{ card.expiry_date.strftime('%m/%Y') }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Property Information</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Property ID:</strong> {{ property.property_id }}</li>
+                    <li class="list-group-item"><strong>Type:</strong> {{ property.type.capitalize() }}</li>
+                    {% if property.number_of_rooms %}
+                    <li class="list-group-item"><strong>Rooms:</strong> {{ property.number_of_rooms }}</li>
+                    {% endif %}
+                    {% if property.square_footage %}
+                    <li class="list-group-item"><strong>Square Footage:</strong> {{ property.square_footage }} sq ft</li>
+                    {% endif %}
+                </ul>
+                <a href="/property/{{ property.property_id }}" class="btn btn-primary mt-3">View Property</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Address</h5>
+                <p>
+                    {{ address.street }}<br>
+                    {{ address.city }}, {{ address.state }} {{ address.zip_code }}<br>
+                    {{ address.country }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

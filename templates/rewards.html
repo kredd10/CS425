@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Rewards Program</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">How It Works</h3>
+            <p class="card-text">
+                Our rewards program is designed to thank our loyal customers. For every booking you make, 
+                you'll earn reward points equal to the daily rental price of the property.
+            </p>
+            <p class="card-text">
+                For example, if you book a property that costs $100 per day, you'll earn 100 reward points.
+            </p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Redeeming Points</h3>
+            <p class="card-text">
+                You can redeem your reward points for discounts on future bookings. Every 100 points equals $10 off your next booking.
+            </p>
+            <p class="card-text">
+                To redeem your points, simply select the "Use Reward Points" option during checkout.
+            </p>
+        </div>
+    </div>
+    
+    {% if session.user_id and session.user_type == 'prospective_renter' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Your Rewards</h3>
+            {% if total_points %}
+            <p class="card-text">
+                You currently have <strong>{{ total_points }}</strong> reward points.
+            </p>
+            <p class="card-text">
+                That's equivalent to <strong>${{ (total_points / 10)|round(2) }}</strong> in discounts!
+            </p>
+            {% else %}
+            <p class="card-text">
+                You don't have any reward points yet. Book a property to start earning!
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if rewards %}
+    <h3 class="mb-3">Your Reward History</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Date</th>
+                    <th>Points Earned</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reward in rewards %}
+                <tr>
+                    <td><a href="/booking_details/{{ reward.booking_id }}">{{ reward.booking_id }}</a></td>
+                    <td>{{ reward.booking.booking_date }}</td>
+                    <td>{{ reward.reward_points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+        {% if session.user_id and session.user_type == 'prospective_renter' %}
+        <a href="/search" class="btn btn-primary">Book a Property</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

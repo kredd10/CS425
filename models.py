@@ -67,10 +67,10 @@ class Address(db.Model):
     country = db.Column(db.String(250))
     address_type = db.Column(db.String(10), nullable=False)
     
-    # Add CheckConstraint to ensure address_type is one of the allowed values
+    # Update CheckConstraint to match SQL schema
     __table_args__ = (
         db.CheckConstraint(
-            "address_type IN ('home', 'work', 'billing', 'shipping', 'property', 'other')",
+            "address_type IN ('primary', 'payment')",
             name='address_address_type_check'
         ),
     )
@@ -124,10 +124,11 @@ class Property(db.Model):
     agency_name = db.Column(db.String(250))
     type_of_business = db.Column(db.String(250))
     availability = db.Column(db.Boolean, nullable=False)
+    # Remove the description and property_purpose columns
     
-    prices = db.relationship('Price', backref='property', lazy=True)
-    bookings = db.relationship('Booking', backref='property', lazy=True)
-    features = db.relationship('Property_features', backref='property', uselist=False, lazy=True)
+    prices = db.relationship('Price', backref='property', lazy=True, cascade="all, delete-orphan", passive_deletes=True)
+    bookings = db.relationship('Booking', backref='property', lazy=True, cascade="all, delete-orphan", passive_deletes=True)
+    features = db.relationship('Property_features', backref='property', uselist=False, lazy=True, cascade="all, delete-orphan", passive_deletes=True)
     
     def __repr__(self):
         return f'<Property {self.property_id}>'
@@ -180,6 +181,12 @@ class Reward_program(db.Model):
     
     def __repr__(self):
         return f'<Reward {self.reward_id}>'
+
+
+
+
+
+
 
 
 

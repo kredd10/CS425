@@ -37,10 +37,11 @@
                     <select class="form-select" id="payment_address_id" name="payment_address_id" required>
                         {% for address in addresses %}
                         <option value="{{ address.address_id }}">
-                            {{ address.address_type.capitalize() }}: {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+                            {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
                         </option>
                         {% endfor %}
                     </select>
+                    <small class="text-muted">Only addresses with type 'payment' are shown. <a href="/add_address">Add a payment address</a> if none are available.</small>
                 </div>
                 
                 <div class="d-grid gap-2">

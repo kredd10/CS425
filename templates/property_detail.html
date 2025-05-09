@@ -64,12 +64,49 @@
             <div class="card-body">
                 <h5 class="card-title">Neighborhood</h5>
                 <p><strong>Name:</strong> {{ neighborhood.neighborhood_name }}</p>
-                {% if neighborhood.safety_index %}
-                <p><strong>Safety Index:</strong> {{ neighborhood.safety_index }}/10</p>
+                {% if neighborhood.crime_rate %}
+                <p><strong>Crime Rate:</strong> {{ neighborhood.crime_rate }}</p>
                 {% endif %}
-                {% if neighborhood.walkability_score %}
-                <p><strong>Walkability Score:</strong> {{ neighborhood.walkability_score }}/10</p>
+                {% if neighborhood.school_rating %}
+                <p><strong>School Rating:</strong> {{ neighborhood.school_rating }}/5</p>
                 {% endif %}
+                
+                <h6 class="mt-3">Neighborhood Features</h6>
+                <ul class="list-group list-group-flush">
+                    {% if neighborhood.has_vacation_home %}
+                    <li class="list-group-item">
+                        <i class="fas fa-umbrella-beach text-success"></i> Vacation Homes Available
+                    </li>
+                    {% endif %}
+                    {% if neighborhood.has_land_available %}
+                    <li class="list-group-item">
+                        <i class="fas fa-mountain text-success"></i> Land Available for Purchase
+                    </li>
+                    {% endif %}
+                    {% if neighborhood.amenities_available %}
+                    <li class="list-group-item">
+                        <i class="fas fa-swimming-pool text-success"></i> Community Amenities Available
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <div class="mt-3">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-danger" role="progressbar" 
+                             style="width: {{ (neighborhood.crime_rate / 50) * 100 }}%" 
+                             aria-valuenow="{{ neighborhood.crime_rate }}" aria-valuemin="0" aria-valuemax="50">
+                        </div>
+                    </div>
+                    <small class="text-muted">Crime Rate (lower is better)</small>
+                    
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ (neighborhood.school_rating / 5) * 100 }}%" 
+                             aria-valuenow="{{ neighborhood.school_rating }}" aria-valuemin="0" aria-valuemax="5">
+                        </div>
+                    </div>
+                    <small class="text-muted">School Rating (higher is better)</small>
+                </div>
             </div>
         </div>
         {% endif %}
@@ -136,3 +173,4 @@
 </div>
 {% endif %}
 {% endblock %}
+
