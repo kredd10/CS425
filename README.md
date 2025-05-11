@@ -35,9 +35,9 @@ source .venv/bin/activate
 ```
 
 3. Install required dependencies:
-4. 
+
 ```bash
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 ### Database Setup
