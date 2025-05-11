@@ -14,7 +14,7 @@ Project for Spring 2025
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/cs425.git
+git clone https://github.com/kredd10/CS425.git
 cd cs425
 ```
 
