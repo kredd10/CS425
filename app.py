@@ -1,13 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, date
+from flask import Flask
+from config import config
 import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_testing')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://admin:secret@localhost:5432/real_estate_db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Load config based on environment variable, default to development
+config_name = os.environ.get('FLASK_CONFIG', 'default')
+app.config.from_object(config[config_name])
 
 # Import db from models and initialize it with the app
 from models import db
@@ -1107,6 +1105,8 @@ def cancel_booking(booking_id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
 
 
 
