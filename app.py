@@ -1,11 +1,11 @@
-from flask import Flask
-from config import config
-import os
+from flask import Flask, render_template, request, flash, redirect, url_for, session
+from datetime import date, datetime
+from config import DATABASE_URI, SECRET_KEY
 
 app = Flask(__name__)
-# Load config based on environment variable, default to development
-config_name = os.environ.get('FLASK_CONFIG', 'default')
-app.config.from_object(config[config_name])
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
+app.secret_key = SECRET_KEY
+app.config['SESSION_TYPE'] = 'filesystem'
 
 # Import db from models and initialize it with the app
 from models import db

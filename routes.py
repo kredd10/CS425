@@ -1,5 +1,5 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
-from __init__ import app, db
+from flask import render_template, request, redirect, url_for, flash
+from app import app, db
 from models import Users, Agent, Prospective_renter, Address, Credit_card, Property, Price, Booking, Reward_program
 from datetime import datetime
 
