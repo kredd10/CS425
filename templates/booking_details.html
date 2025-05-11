@@ -65,7 +65,50 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Booking Status</h5>
+    </div>
+    <div class="card-body">
+        {% if (session.user_type == 'agent' and property.agent_id == agent.agent_id) or (session.user_type == 'prospective_renter' and booking.renter_id == renter.renter_id) %}
+        <div class="d-grid gap-2">
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                Cancel Booking
+            </button>
+        </div>
+        
+        <!-- Cancel Confirmation Modal -->
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to cancel this booking? This will:</p>
+                        <ul>
+                            <li>Refund the rental cost to your payment method</li>
+                            <li>Make the property available for other bookings</li>
+                            <li>Delete the booking from the system</li>
+                        </ul>
+                        <p class="text-danger"><strong>Warning:</strong> This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Booking</button>
+                        <form action="/cancel_booking/{{ booking.booking_id }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Yes, Cancel Booking</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="mt-4">
     <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
 </div>
 {% endblock %}
+

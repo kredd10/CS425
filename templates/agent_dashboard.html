@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -32,7 +33,8 @@
             <div class="card-body">
                 <h5 class="card-title">Actions</h5>
                 <a href="/add_property" class="btn btn-success mb-2">Add New Property</a>
-                <a href="/manage_properties" class="btn btn-info">Manage Properties</a>
+                <a href="/manage_properties" class="btn btn-info mb-2">Manage Properties</a>
+                <a href="/agent_bookings" class="btn btn-warning">Manage Bookings</a>
             </div>
         </div>
     </div>
@@ -68,3 +70,4 @@
     {% endif %}
 </div>
 {% endblock %}
+

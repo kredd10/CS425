@@ -8,7 +8,7 @@
         <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">{{ property.type.capitalize() }}</h5>
-                <p class="lead">${{ price.rental_price }} per day</p>
+                <p class="lead">${{ price.rental_price }} per Month</p>
                 <ul class="list-group list-group-flush">
                     {% if property.number_of_rooms %}
                     <li class="list-group-item">Rooms: {{ property.number_of_rooms }}</li>
@@ -66,7 +66,7 @@
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
         const totalCostElement = document.getElementById('totalCost');
-        const pricePerDay = {{ price.rental_price }};
+        const pricePerMonth = {{ price.rental_price }};
         
         // Set minimum date to today
         const today = new Date().toISOString().split('T')[0];
@@ -89,7 +89,8 @@
                 const start = new Date(startDateInput.value);
                 const end = new Date(endDateInput.value);
                 const days = Math.max(1, Math.floor((end - start) / (1000 * 60 * 60 * 24)));
-                const totalCost = days * pricePerDay;
+                const months = days / 30; // Approximate months
+                const totalCost = pricePerMonth * months;
                 totalCostElement.textContent = '$' + totalCost.toFixed(2);
             }
         }
@@ -106,3 +107,4 @@
         });
     });
 </script>
+

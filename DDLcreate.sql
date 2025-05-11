@@ -19,10 +19,10 @@ CREATE TABLE Agent (
     Job_title            VARCHAR(250),
     Agency_name          VARCHAR(250),
     Contract_type        VARCHAR(50),
-    Contract_start_date  DATE,
-    Contract_end_date    DATE,
-    Salary               DECIMAL(10,2),
-    Commission           DECIMAL(10,2),
+    --Contract_start_date  DATE,
+    --Contract_end_date    DATE,
+    --Salary               DECIMAL(10,2),
+    --Commission           DECIMAL(10,2),
     CONSTRAINT chk_contract_dates
       CHECK (
         Contract_start_date IS NULL

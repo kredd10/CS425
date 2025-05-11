@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, date
 import os
 
 app = Flask(__name__)
@@ -107,14 +107,27 @@ def dashboard():
 def properties():
     # Get all properties
     properties = Property.query.all()
+    today = date.today()
     
-    # For each property, get the latest price
+    # For each property, get the latest price and check booking status
     for prop in properties:
+        # Get price
         latest_price = Price.query.filter_by(property_id=prop.property_id).order_by(Price.effective_date.desc()).first()
         if latest_price:
             prop.current_price = latest_price.rental_price
         else:
             prop.current_price = None
+        
+        # Check if property has active bookings for today
+        active_booking = Booking.query.filter_by(property_id=prop.property_id).\
+            filter(Booking.start_date <= today).\
+            filter(Booking.lease_till_date >= today).first()
+        
+        # Override availability if there's an active booking
+        if active_booking:
+            prop.is_booked = True
+        else:
+            prop.is_booked = False
     
     return render_template('properties.html', properties=properties)
 
@@ -124,6 +137,18 @@ def property_detail(property_id):
     address = Address.query.get(property.address_id)
     features = Property_features.query.filter_by(property_id=property_id).first()
     price = Price.query.filter_by(property_id=property_id).order_by(Price.effective_date.desc()).first()
+    
+    # Check if property has active bookings for today
+    today = date.today()
+    active_booking = Booking.query.filter_by(property_id=property_id).\
+        filter(Booking.start_date <= today).\
+        filter(Booking.lease_till_date >= today).first()
+    
+    # Override availability if there's an active booking
+    if active_booking:
+        property.is_booked = True
+    else:
+        property.is_booked = False
     
     # Get neighborhood if available
     neighborhood = None
@@ -449,17 +474,34 @@ def edit_property(property_id):
         property.square_footage = request.form.get('square_footage')
         property.agency_name = request.form.get('agency_name')
         property.type_of_business = request.form.get('business_type')
-        property.neighborhood_id = request.form.get('neighborhood_id')
+        
+        # Fix for neighborhood_id - convert empty string to None
+        neighborhood_id = request.form.get('neighborhood_id')
+        property.neighborhood_id = None if neighborhood_id == '' else neighborhood_id
+        
         property.availability = request.form.get('availability') == 'on'
         
         # Update price if changed
         new_price = request.form.get('rental_price')
         if float(new_price) != float(current_price.rental_price):
-            price = Price(
-                property_id=property_id,
-                rental_price=new_price
-            )
-            db.session.add(price)
+            # Check if a price record already exists for today
+            today = datetime.utcnow().date()
+            existing_price = Price.query.filter_by(
+                property_id=property_id, 
+                effective_date=today
+            ).first()
+            
+            if existing_price:
+                # Update existing price record
+                existing_price.rental_price = new_price
+            else:
+                # Create new price record
+                price = Price(
+                    property_id=property_id,
+                    rental_price=new_price,
+                    effective_date=today
+                )
+                db.session.add(price)
         
         # Update features
         features.has_vacation_home = request.form.get('has_vacation_home') == 'on'
@@ -913,22 +955,23 @@ def booking_details(booking_id):
         flash('Please log in first')
         return redirect(url_for('login'))
     
-    # Get the booking
     booking = Booking.query.get_or_404(booking_id)
     
-    # Check if the booking belongs to this user
-    user = Users.query.get(session['user_id'])
-    if user.user_type == 'prospective_renter':
-        renter = Prospective_renter.query.filter_by(user_id=user.user_id).first()
+    # Check if the user is authorized to view this booking
+    if session['user_type'] == 'prospective_renter':
+        renter = Prospective_renter.query.filter_by(user_id=session['user_id']).first()
         if booking.renter_id != renter.renter_id:
             flash('You can only view your own bookings')
             return redirect(url_for('dashboard'))
-    elif user.user_type == 'agent':
-        agent = Agent.query.filter_by(user_id=user.user_id).first()
+    elif session['user_type'] == 'agent':
+        agent = Agent.query.filter_by(user_id=session['user_id']).first()
         property = Property.query.get(booking.property_id)
         if property.agent_id != agent.agent_id:
             flash('You can only view bookings for your properties')
             return redirect(url_for('dashboard'))
+    else:
+        flash('Unauthorized access')
+        return redirect(url_for('dashboard'))
     
     # Get related information
     property = Property.query.get(booking.property_id)
@@ -936,6 +979,9 @@ def booking_details(booking_id):
     renter = Prospective_renter.query.get(booking.renter_id)
     renter_user = Users.query.get(renter.user_id)
     card = Credit_card.query.get(booking.card_id)
+    
+    # Get agent information
+    agent = Agent.query.get(property.agent_id)
     
     # Get reward points if any
     reward = Reward_program.query.filter_by(booking_id=booking.booking_id).first()
@@ -945,7 +991,8 @@ def booking_details(booking_id):
     if current_price:
         # Calculate days between start and end date
         days = (booking.lease_till_date - booking.start_date).days
-        total_price = float(current_price.rental_price) * days
+        months = days / 30  # Approximate months
+        total_price = float(current_price.rental_price) * months
     else:
         total_price = None
     
@@ -957,7 +1004,8 @@ def booking_details(booking_id):
                           renter_user=renter_user,
                           card=card,
                           reward=reward,
-                          total_price=total_price)
+                          total_price=total_price,
+                          agent=agent)
 
 @app.route('/rewards')
 def rewards():
@@ -981,8 +1029,95 @@ def rewards():
     
     return render_template('rewards.html', rewards=rewards, total_points=total_points)
 
+# Agent booking management routes
+@app.route('/agent_bookings')
+def agent_bookings():
+    if 'user_id' not in session or session['user_type'] != 'agent':
+        flash('You must be logged in as an agent to manage bookings')
+        return redirect(url_for('login'))
+    
+    agent = Agent.query.filter_by(user_id=session['user_id']).first()
+    
+    # Get all properties owned by this agent
+    properties = Property.query.filter_by(agent_id=agent.agent_id).all()
+    property_ids = [p.property_id for p in properties]
+    
+    # Get all bookings for these properties
+    bookings = Booking.query.filter(Booking.property_id.in_(property_ids)).all()
+    
+    # Add renter information to each booking
+    for booking in bookings:
+        renter = Prospective_renter.query.get(booking.renter_id)
+        booking.renter_user = Users.query.get(renter.user_id)
+    
+    return render_template('agent_bookings.html', bookings=bookings)
+
+@app.route('/cancel_booking/<int:booking_id>', methods=['POST'])
+def cancel_booking(booking_id):
+    if 'user_id' not in session:
+        flash('Please log in first')
+        return redirect(url_for('login'))
+    
+    booking = Booking.query.get_or_404(booking_id)
+    property = Property.query.get(booking.property_id)
+    
+    # Check if user is authorized to cancel this booking
+    if session['user_type'] == 'agent':
+        agent = Agent.query.filter_by(user_id=session['user_id']).first()
+        # Check if the property belongs to this agent
+        if property.agent_id != agent.agent_id:
+            flash('You can only cancel bookings for your own properties')
+            return redirect(url_for('agent_bookings'))
+    elif session['user_type'] == 'prospective_renter':
+        renter = Prospective_renter.query.filter_by(user_id=session['user_id']).first()
+        # Check if the booking belongs to this renter
+        if booking.renter_id != renter.renter_id:
+            flash('You can only cancel your own bookings')
+            return redirect(url_for('dashboard'))
+    else:
+        flash('Unauthorized access')
+        return redirect(url_for('dashboard'))
+    
+    try:
+        # Calculate refund amount (for display purposes)
+        current_price = Price.query.filter_by(property_id=property.property_id).order_by(Price.effective_date.desc()).first()
+        days = (booking.lease_till_date - booking.start_date).days
+        months = days / 30  # Approximate months
+        refund_amount = float(current_price.rental_price) * months
+        
+        # Remove reward points if they were awarded
+        reward = Reward_program.query.filter_by(booking_id=booking.booking_id).first()
+        if reward:
+            db.session.delete(reward)
+        
+        # Delete the booking
+        db.session.delete(booking)
+        db.session.commit()
+        
+        flash(f'Booking cancelled successfully. ${refund_amount:.2f} has been refunded to your payment method.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error cancelling booking: {str(e)}')
+    
+    # Redirect based on user type
+    if session['user_type'] == 'agent':
+        return redirect(url_for('agent_bookings'))
+    else:
+        return redirect(url_for('dashboard'))
+
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
 
 
 

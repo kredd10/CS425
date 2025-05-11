@@ -54,6 +54,15 @@
                         <option value="land">Land</option>
                     </select>
                 </div>
+                <div class="col-md-6 mb-3">
+                    <label for="neighborhood_id" class="form-label">Neighborhood</label>
+                    <select class="form-control" id="neighborhood_id" name="neighborhood_id">
+                        <option value="">-- Select Neighborhood --</option>
+                        {% for neighborhood in neighborhoods %}
+                        <option value="{{ neighborhood.neighborhood_id }}">{{ neighborhood.neighborhood_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -84,7 +93,7 @@
         </div>
         <div class="card-body">
             <div class="mb-3">
-                <label for="rental_price" class="form-label">Rental Price (per day)</label>
+                <label for="rental_price" class="form-label">Rental Price (per month)</label>
                 <input type="number" class="form-control" id="rental_price" name="rental_price" step="0.01" min="0" required>
             </div>
         </div>
@@ -127,5 +136,6 @@
     </div>
 </form>
 {% endblock %}
+
 
 
